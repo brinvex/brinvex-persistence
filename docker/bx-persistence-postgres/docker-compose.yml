@@ -1,0 +1,17 @@
+volumes:
+  postgresql_data:
+
+services:
+  bx-persistence-postgres:
+    image: postgres:17.2
+    environment:
+      POSTGRES_DB: brinvex_persistence_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    expose:
+      - 15432
+    ports:
+      - "15432:5432"
+    restart: on-failure
