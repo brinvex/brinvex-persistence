@@ -5,7 +5,7 @@
 
     <groupId>com.brinvex</groupId>
     <artifactId>brinvex-persistence</artifactId>
-    <version>1.0.0-SHAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>brinvex-persistence</name>
     <description>
