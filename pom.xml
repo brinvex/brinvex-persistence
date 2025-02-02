@@ -47,7 +47,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <github-site-maven-plugin.version>0.11</github-site-maven-plugin.version>
-        <github.global.server>github</github.global.server>
+        <github.global.server>github-pubrepo-brinvex</github.global.server>
 
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -259,7 +259,7 @@
                         <include>**/*</include>
                     </includes>
                     <!-- GitHub repo name -->
-                    <repositoryName>brinvex-repo</repositoryName>
+                    <repositoryName>brinvex-pubrepo</repositoryName>
                     <!-- GitHub username  -->
                     <repositoryOwner>brinvex</repositoryOwner>
                     <merge>true</merge>

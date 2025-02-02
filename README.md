@@ -10,14 +10,14 @@ remaining straightforward and focused on _PostgreSQL_ and _Microsoft SQL Server_
 </properties>
 
 <repository>
-    <id>repository.brinvex</id>
-    <name>Brinvex Repository</name>
-    <url>https://github.com/brinvex/brinvex-repo/raw/main/</url>
+    <id>github-pubrepo-brinvex</id>
+    <name>Github Public Repository - Brinvex</name>
+    <url>https://github.com/brinvex/brinvex-pubrepo/raw/main/</url>
     <snapshots>
         <enabled>false</enabled>
     </snapshots>
 </repository>
-
+    
 <dependency>
     <groupId>com.brinvex</groupId>
     <artifactId>brinvex-persistence-api</artifactId>
