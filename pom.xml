@@ -64,7 +64,7 @@
 
         <junit-jupiter.version>5.11.3</junit-jupiter.version>
         <!-- Presented in README -->
-        <hibernate.version.version>6.6.2.Final</hibernate.version.version>
+        <hibernate.version.version>6.6.29.Final</hibernate.version.version>
 
         <!--
         The need those 2 dependencies is a consequence of JPMS automatic module of Hibernate and its dependencies:

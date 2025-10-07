@@ -3,7 +3,7 @@ volumes:
 
 services:
   bx-persistence-postgres:
-    image: postgres:17.2
+    image: postgres:17.6
     environment:
       POSTGRES_DB: brinvex_persistence_test
       POSTGRES_USER: postgres
