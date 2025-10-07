@@ -358,6 +358,55 @@ public class EntityDaoTest extends AbstractTest {
     }
 
     @Test
+    void findForPessimisticRead() throws InterruptedException, ExecutionException {
+
+        Callable<Object> c1 = () -> doInTx(em -> {
+            SalaryDao salaryDao = new SalaryDao(em);
+            LOG.debug("before thread1-findForPessimisticRead");
+            Salary salary = salaryDao.findForPessimisticRead(emp1.getId(), salary1_1.getDate(), Duration.ofSeconds(2));
+            LOG.debug("after thread1-findForPessimisticRead - result: {}", salary);
+            sleep(6);
+            LOG.debug("after thread1 sleep");
+            return null;
+        });
+
+        Callable<Object> c2 = () -> doInTx(em -> {
+            sleep(1);
+            LOG.debug("after thread2 sleep");
+            SalaryDao salaryDao = new SalaryDao(em);
+            try {
+                LOG.debug("before thread2-findForPessimisticRead");
+                Salary salary = salaryDao.findForPessimisticRead(emp1.getId(), salary1_1.getDate(), Duration.ofSeconds(2));
+                LOG.debug("after thread2-findForPessimisticRead - result: {}", salary);
+            } catch (LockTimeoutException e) {
+                fail(e);
+            }
+            return null;
+        });
+
+        Callable<Object> c3 = () -> doInTx(em -> {
+            sleep(2);
+            LOG.debug("after thread2 sleep");
+            SalaryDao salaryDao = new SalaryDao(em);
+            try {
+                LOG.debug("before thread3-findForUpdate");
+                Salary salary = salaryDao.findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofSeconds(2));
+                LOG.debug("after thread3-findForUpdate - result: {}", salary);
+                fail("Expecting LockTimeoutException");
+            } catch (LockTimeoutException e) {
+                LOG.debug("after failed thread3-findForUpdate - expected exception: {}", e.getMessage());
+            }
+            return null;
+        });
+
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2, c3));
+        for (Future<Object> future : futures) {
+            future.get();
+        }
+    }
+
+    @Test
     void getForUpdate() throws InterruptedException, ExecutionException {
 
         Callable<Object> c1 = () -> doInTx(em -> {

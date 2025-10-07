@@ -96,6 +96,18 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
         return getFirstResultForUpdate(q, lockTimeout);
     }
 
+    public Salary findForPessimisticRead(long employeeId, LocalDate date, Duration lockTimeout) {
+        CriteriaBuilder cb = this.cb();
+        CriteriaQuery<Salary> q = cb.createQuery(Salary.class);
+        Root<Salary> r = q.from(Salary.class);
+        Join<Salary, Employee> employeeJoin = fetchJoin(r, Salary_.employee);
+        q.where(
+                cb.equal(employeeJoin.get(Employee_.id), employeeId),
+                cb.equal(r.get(Salary_.date), date)
+        );
+        return getFirstResultForPessimisticRead(q, lockTimeout);
+    }
+
     public Salary findForUpdateSkipLocked(long employeeId, LocalDate date) {
         CriteriaBuilder cb = this.cb();
         CriteriaQuery<Salary> q = cb.createQuery(Salary.class);

@@ -153,6 +153,12 @@ public interface GeneralDao {
             Duration lockTimeout
     );
 
+    <R> R getFirstResultForPessimisticRead(
+            EntityManager em,
+            CriteriaQuery<R> q,
+            Duration lockTimeout
+    );
+
     <R> R getFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q);
 
     <R> Query<R> asHibernateQuery(TypedQuery<R> typedQuery);

@@ -488,6 +488,32 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
+    public <R> R getFirstResultForPessimisticRead(
+            EntityManager em,
+            CriteriaQuery<R> q,
+            Duration lockTimeout
+    ) {
+        requireNonNull(lockTimeout, "Expecting non-null lockTimeout");
+
+        setTransactionScopedLockTimeout(em, lockTimeout);
+        TypedQuery<R> typedQuery = em
+                .createQuery(q)
+                .setMaxResults(1)
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
+                .setHint(SpecHints.HINT_SPEC_LOCK_TIMEOUT, Long.toString(lockTimeout.toMillis()));
+
+        List<R> records = typedQuery.getResultList();
+        int recordSize = records.size();
+        R result = switch (recordSize) {
+            case 0 -> null;
+            case 1 -> records.get(0);
+            default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
+        };
+        setTransactionScopedLockTimeout(em, Duration.ZERO);
+        return result;
+    }
+
+    @Override
     public <R> R getFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q) {
         TypedQuery<R> typedQuery = em
                 .createQuery(q)

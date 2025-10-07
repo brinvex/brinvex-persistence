@@ -228,6 +228,10 @@ public abstract class AbstractEntityDao<ENTITY, ID extends Serializable> impleme
         return generalDao.getFirstResultForUpdate(em(), query, lockTimeout);
     }
 
+    protected <R> R getFirstResultForPessimisticRead(CriteriaQuery<R> query, Duration lockTimeout) {
+        return generalDao.getFirstResultForPessimisticRead(em(), query, lockTimeout);
+    }
+
     protected <R> R getFirstResultForUpdateSkipLocked(CriteriaQuery<R> query) {
         return generalDao.getFirstResultForUpdateSkipLocked(em(), query);
     }
