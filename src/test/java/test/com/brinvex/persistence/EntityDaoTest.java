@@ -18,10 +18,10 @@ package test.com.brinvex.persistence;
 import com.brinvex.persistence.api.Filter;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.OptimisticLockException;
-import jakarta.persistence.PessimisticLockException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Selection;
 import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -141,8 +141,8 @@ public class EntityDaoTest extends AbstractTest {
                     .findByDate(emp1.getValidFrom().plusHours(1));
         });
         assertEquals(1, employees.size());
-        assertEquals(emp1.getId(), employees.get(0).getId());
-        assertArrayEquals(emp1.getPhoneNumbers(), employees.get(0).getPhoneNumbers());
+        assertEquals(emp1.getId(), employees.getFirst().getId());
+        assertArrayEquals(emp1.getPhoneNumbers(), employees.getFirst().getPhoneNumbers());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -154,7 +154,7 @@ public class EntityDaoTest extends AbstractTest {
                         .findByEmployeeId(emp1.getId(), false);
             });
             assertEquals(3, salaries.size());
-            assertThrows(LazyInitializationException.class, () -> salaries.get(0).getEmployee().getName());
+            assertThrows(LazyInitializationException.class, () -> salaries.getFirst().getEmployee().getName());
             assertThrows(LazyInitializationException.class, () -> salaries.get(1).getEmployee().getName());
             assertThrows(LazyInitializationException.class, () -> salaries.get(2).getEmployee().getName());
         }
@@ -227,7 +227,7 @@ public class EntityDaoTest extends AbstractTest {
                 return new SalaryDao(em).findByDates(emp1.getId(), List.of(salary1_2.getDate()));
             });
             assertEquals(1, salaries.size());
-            assertEquals(salary1_2.getId(), salaries.get(0).getId());
+            assertEquals(salary1_2.getId(), salaries.getFirst().getId());
         }
         {
             List<Salary> salaries = doInTx(em -> {
@@ -350,10 +350,11 @@ public class EntityDaoTest extends AbstractTest {
             return null;
         });
 
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
-        for (Future<Object> future : futures) {
-            future.get();
+        try (ExecutorService executorService = Executors.newFixedThreadPool(2)) {
+            List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
+            for (Future<Object> future : futures) {
+                future.get();
+            }
         }
     }
 
@@ -399,10 +400,11 @@ public class EntityDaoTest extends AbstractTest {
             return null;
         });
 
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2, c3));
-        for (Future<Object> future : futures) {
-            future.get();
+        try (ExecutorService executorService = Executors.newFixedThreadPool(2)) {
+            List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2, c3));
+            for (Future<Object> future : futures) {
+                future.get();
+            }
         }
     }
 
@@ -428,16 +430,17 @@ public class EntityDaoTest extends AbstractTest {
                 Salary salary = salaryDao.getByIdForUpdate(salary1_1.getId(), Duration.ofSeconds(2));
                 LOG.debug("after thread2-findForUpdate - result: {}", salary);
                 fail("Expecting PessimisticLockException");
-            } catch (PessimisticLockException e) {
+            } catch (LockTimeoutException e) {
                 LOG.debug("after failed thread2-findForUpdate - expected exception: {}", e.getMessage());
             }
             return null;
         });
 
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
-        for (Future<Object> future : futures) {
-            future.get();
+        try (ExecutorService executorService = Executors.newFixedThreadPool(2)) {
+            List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
+            for (Future<Object> future : futures) {
+                future.get();
+            }
         }
     }
 
@@ -465,10 +468,11 @@ public class EntityDaoTest extends AbstractTest {
             return null;
         });
 
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
-        for (Future<Object> future : futures) {
-            future.get();
+        try (ExecutorService executorService = Executors.newFixedThreadPool(2)) {
+            List<Future<Object>> futures = executorService.invokeAll(List.of(c1, c2));
+            for (Future<Object> future : futures) {
+                future.get();
+            }
         }
     }
 
@@ -538,11 +542,11 @@ public class EntityDaoTest extends AbstractTest {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Object[]> q = cb.createQuery(Object[].class);
             Root<Employee> r = q.from(Employee.class);
-            q.multiselect(r.get(Employee_.id), r.get(Employee_.id));
+            q.select(cb.array(r.get(Employee_.id), r.get(Employee_.id)));
             q.where(cb.equal(r.get(Employee_.id), emp1.getId()));
             List<Object[]> idPairs = em.createQuery(q).getResultList();
 
-            Object[] rawIdPair0 = idPairs.get(0);
+            Object[] rawIdPair0 = idPairs.getFirst();
 
             assertEquals(emp1.getId(), rawIdPair0[0]);
             assertEquals(emp1.getId(), rawIdPair0[1]);
@@ -556,17 +560,18 @@ public class EntityDaoTest extends AbstractTest {
             CriteriaBuilder cb = em.getCriteriaBuilder();
             CriteriaQuery<Long[]> q = cb.createQuery(Long[].class);
             Root<Employee> r = q.from(Employee.class);
-            q.multiselect(r.get(Employee_.id), r.get(Employee_.id));
+            @SuppressWarnings("rawtypes")
+            Selection rawSelection = cb.array(r.get(Employee_.id), r.get(Employee_.id));
+            @SuppressWarnings("unchecked")
+            Selection<Long[]> selection = rawSelection;
+            q.select(selection);
             q.where(cb.equal(r.get(Employee_.id), emp1.getId()));
             List<Long[]> idPairs = em.createQuery(q).getResultList();
-            Object[] rawIdPair0 = idPairs.get(0);
+            Object[] rawIdPair0 = idPairs.getFirst();
             assertArrayEquals(new Object[]{emp1.getId(), emp1.getId()}, rawIdPair0);
-            try {
-                Long[] longIdPair0 = idPairs.get(0);
-                Long id00 = longIdPair0[0];
-                assertEquals(emp1.getId(), id00);
-            } catch (ClassCastException expected) {
-            }
+            Long[] longIdPair0 = idPairs.getFirst();
+            Long id00 = longIdPair0[0];
+            assertEquals(emp1.getId(), id00);
         });
     }
 

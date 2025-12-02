@@ -41,7 +41,7 @@
 
     <properties>
         <!-- Presented in README -->
-        <java.version>17</java.version>
+        <java.version>25</java.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -53,30 +53,20 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
 
-        <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
-        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+        <jakarta.persistence-api.version>3.2.0</jakarta.persistence-api.version>
+        <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
 
-        <slf4j.version>2.0.16</slf4j.version>
-        <logback-classic.version>1.5.12</logback-classic.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <logback-classic.version>1.5.21</logback-classic.version>
 
-        <junit-jupiter.version>5.11.3</junit-jupiter.version>
+        <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <!-- Presented in README -->
-        <hibernate.version.version>6.6.29.Final</hibernate.version.version>
+        <hibernate.version.version>7.1.8.Final</hibernate.version.version>
 
-        <!--
-        The need those 2 dependencies is a consequence of JPMS automatic module of Hibernate and its dependencies:
-        org.hibernate.orm.core (Automatic)
-          -> jakarta.transaction-api (Implicit)
-              -> jakarta.enterprise.cdi-api (required by jakarta.transaction-api)
-              -> jakarta.interceptor-api (required by jakarta.transaction-api)
-        -->
-        <jakarta.interceptor-api.version>2.2.0</jakarta.interceptor-api.version>
-        <jakarta.enterprise.cdi-api.version>3.0.1</jakarta.enterprise.cdi-api.version>
-
-        <postgresql.version>42.7.4</postgresql.version>
+        <postgresql.version>42.7.8</postgresql.version>
     </properties>
 
 
@@ -112,16 +102,6 @@
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-jpamodelgen</artifactId>
                 <version>${hibernate.version.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.interceptor</groupId>
-                <artifactId>jakarta.interceptor-api</artifactId>
-                <version>${jakarta.interceptor-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${jakarta.enterprise.cdi-api.version}</version>
             </dependency>
 
             <dependency>
@@ -163,17 +143,6 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.interceptor</groupId>
-            <artifactId>jakarta.interceptor-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <version>${jakarta.enterprise.cdi-api.version}</version>
         </dependency>
 
         <dependency>

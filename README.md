@@ -29,7 +29,7 @@ The library supports _JPMS_ and exports the module named ````com.brinvex.persist
 
 ## Requirements
 
-Java 17 or above, Hibernate ORM 6.6 or above.
+Java 25 or above, Hibernate ORM 7.1 or above.
 
 ### License
 

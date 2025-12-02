@@ -1,4 +1,4 @@
-set JAVA_HOME="C:\tools\java\jdk-17.0.6"
+set JAVA_HOME="V:\tools\java\jdk-25"
 
 set new_version=1.0.1
 

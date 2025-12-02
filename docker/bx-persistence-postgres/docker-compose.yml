@@ -3,13 +3,13 @@ volumes:
 
 services:
   bx-persistence-postgres:
-    image: postgres:17.6
+    image: postgres:18.1
     environment:
       POSTGRES_DB: brinvex_persistence_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     volumes:
-      - postgresql_data:/var/lib/postgresql/data
+      - postgresql_data:/var/lib/postgresql
     expose:
       - 15432
     ports:

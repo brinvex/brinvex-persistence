@@ -22,6 +22,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CompoundSelection;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -100,7 +101,7 @@ public class GeneralDaoImpl implements GeneralDao {
             throw new IllegalArgumentException("Required non-null id");
         }
         Session hibSession = em.unwrap(Session.class);
-        return hibSession.get(entityType, id, LockMode.UPGRADE_SKIPLOCKED);
+        return hibSession.find(entityType, id, LockMode.UPGRADE_SKIPLOCKED);
     }
 
     @Override
@@ -305,7 +306,11 @@ public class GeneralDaoImpl implements GeneralDao {
             Selection<? extends R> typedSelection = (Selection<? extends R>) selections.iterator().next();
             return q.select(typedSelection);
         } else if (resultType.isArray()) {
-            return q.multiselect(selections.toArray(Selection[]::new));
+            @SuppressWarnings("rawtypes")
+            CompoundSelection rawSelection = cb.array(selections.toArray(Selection[]::new));
+            @SuppressWarnings("unchecked")
+            CompoundSelection<R> selection = rawSelection;
+            return q.select(selection);
         } else {
             return q.select(cb.construct(resultType, selections.toArray(Selection[]::new)));
         }
@@ -354,7 +359,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         return switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new IllegalArgumentException(format("Expecting zero or one record, but found %s", recordSize));
         };
     }
@@ -375,7 +380,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         return switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
         };
     }
@@ -392,7 +397,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         return switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
         };
     }
@@ -422,6 +427,7 @@ public class GeneralDaoImpl implements GeneralDao {
      * 2023-01-11 Postgresql 15.2 + jdbc-driver-postgresql-42.5 + Hibernate 6.2.
      * 2024-05-24 Postgresql 16.3 + jdbc-driver-postgresql-42.7 + Hibernate 6.5.
      * 2024-12-14 Postgresql 17.2 + jdbc-driver-postgresql-42.7 + Hibernate 6.6.
+     * 2025-12-02 Postgresql 18.1 + jdbc-driver-postgresql-42.7 + Hibernate 7.1.
      * <p>
      * If the query-scoped timeout hint "jakarta.persistence.lock.timeout" is greater than 0 then it is just ignored,
      * and default wait_forever=-1 is applied.
@@ -480,7 +486,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         R result = switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
         };
         setTransactionScopedLockTimeout(em, Duration.ZERO);
@@ -506,7 +512,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         R result = switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
         };
         setTransactionScopedLockTimeout(em, Duration.ZERO);
@@ -525,7 +531,7 @@ public class GeneralDaoImpl implements GeneralDao {
         int recordSize = records.size();
         return switch (recordSize) {
             case 0 -> null;
-            case 1 -> records.get(0);
+            case 1 -> records.getFirst();
             default -> throw new AssertionError(format("Expecting zero or one record, but found %s", recordSize));
         };
     }
@@ -561,8 +567,8 @@ public class GeneralDaoImpl implements GeneralDao {
     ) {
         if (numberFilter == null) {
             return cb.conjunction();
-        } else if (numberFilter instanceof Filter.BiggerThanNumberFilter biggerThanNumberFilter) {
-            return cb.gt(attribute, biggerThanNumberFilter.number());
+        } else if (numberFilter instanceof Filter.BiggerThanNumberFilter(Number number)) {
+            return cb.gt(attribute, number);
         } else {
             throw new IllegalStateException("Unsupported filter: " + numberFilter);
         }
@@ -672,7 +678,7 @@ public class GeneralDaoImpl implements GeneralDao {
         Map<String, Object> emfProps = em.getEntityManagerFactory().getProperties();
         String puName = (String) emfProps.get(AvailableSettings.PERSISTENCE_UNIT_NAME);
         requireNonNull(puName);
-        return PU_2_DATABASE.computeIfAbsent(puName, k -> detectDatabase(em));
+        return PU_2_DATABASE.computeIfAbsent(puName, _ -> detectDatabase(em));
     }
 
     @Override
