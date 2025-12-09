@@ -49,7 +49,7 @@ public class EmployeeDao extends AbstractEntityDao<Employee, Long> {
                 cb.lessThanOrEqualTo(r.get(Employee_.validFrom), date),
                 cb.greaterThan(r.get(Employee_.validTo), date)
         );
-        return getResults(q);
+        return find(q);
     }
 
     public int findValidFromDayDiff(long employeeId1, long employeeId2) {
@@ -62,7 +62,7 @@ public class EmployeeDao extends AbstractEntityDao<Employee, Long> {
                 cb.equal(r2.get(Employee_.id), employeeId2)
         );
         q.select(durationBetween(r1.get(Employee_.validFrom), r2.get(Employee_.validFrom)));
-        return (int) getUniqueResult(q).toDays();
+        return (int) findFirst(q).toDays();
 
     }
 }

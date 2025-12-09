@@ -107,11 +107,6 @@ public abstract class AbstractEntityDao<ENTITY, ID extends Serializable> impleme
     }
 
     @Override
-    public ENTITY getByIdForUpdateSkipLocked(ID id) {
-        return generalDao.getByIdForUpdateSkipLocked(em(), entityType, id);
-    }
-
-    @Override
     public ENTITY getByIdAndCheckVersion(ID id, short optLockVersion, Function<ENTITY, Short> optLockVersionGetter) {
         return generalDao.getByIdAndCheckVersion(em(), entityType, id, optLockVersion, optLockVersionGetter);
     }
@@ -124,6 +119,11 @@ public abstract class AbstractEntityDao<ENTITY, ID extends Serializable> impleme
     @Override
     public List<ENTITY> findByIds(Collection<ID> ids) {
         return generalDao.findByIds(em(), entityType, ids, idAttribute());
+    }
+
+    @Override
+    public ENTITY findByIdForUpdateSkipLocked(ID id) {
+        return generalDao.findByIdForUpdateSkipLocked(em(), entityType, id, idAttribute());
     }
 
     @Override
@@ -183,25 +183,25 @@ public abstract class AbstractEntityDao<ENTITY, ID extends Serializable> impleme
         return generalDao.fetchJoin(from, attribute);
     }
 
-    protected <R> List<R> getResults(CriteriaQuery<R> query) {
-        return generalDao.getResults(em(), query);
+    protected <R> List<R> find(CriteriaQuery<R> query) {
+        return generalDao.find(em(), query);
     }
 
-    protected <R> List<R> getResults(CriteriaQuery<R> query, Integer offset, Integer limit) {
-        return generalDao.getResults(em(), query, offset, limit);
+    protected <R> List<R> find(CriteriaQuery<R> query, Integer offset, Integer limit) {
+        return generalDao.find(em(), query, offset, limit);
     }
 
-    protected <R> List<R> getResults(CriteriaQuery<R> query, QueryCacheMode queryCacheUsage) {
-        return generalDao.getResults(em(), query, queryCacheUsage);
+    protected <R> List<R> find(CriteriaQuery<R> query, QueryCacheMode queryCacheUsage) {
+        return generalDao.find(em(), query, queryCacheUsage);
     }
 
-    protected <R> List<R> getResults(
+    protected <R> List<R> find(
             CriteriaQuery<R> query,
             Integer offset,
             Integer limit,
             QueryCacheMode queryCacheUsage
     ) {
-        return generalDao.getResults(em(), query, offset, limit, queryCacheUsage);
+        return generalDao.find(em(), query, offset, limit, queryCacheUsage);
     }
 
     protected long count(CriteriaQuery<Long> query, QueryCacheMode queryCacheUsage) {
@@ -212,36 +212,28 @@ public abstract class AbstractEntityDao<ENTITY, ID extends Serializable> impleme
         return generalDao.count(em(), query, QueryCacheMode.BYPASS_QUERY_CACHE, idAttribute());
     }
 
-    protected <R> R getFirstResult(CriteriaQuery<R> query) {
-        return generalDao.getFirstResult(em(), query);
+    protected <R> R findFirst(CriteriaQuery<R> query) {
+        return generalDao.findFirst(em(), query);
     }
 
-    protected <R> R getFirstResult(CriteriaQuery<R> query, Integer offset) {
-        return generalDao.getFirstResult(em(), query, offset);
+    protected <R> R findFirst(CriteriaQuery<R> query, Integer offset) {
+        return generalDao.findFirst(em(), query, offset);
     }
 
-    protected <R> R getFirstResult(CriteriaQuery<R> query, QueryCacheMode queryCachemode) {
-        return generalDao.getFirstResult(em(), query, queryCachemode);
+    protected <R> R findFirst(CriteriaQuery<R> query, QueryCacheMode queryCachemode) {
+        return generalDao.findFirst(em(), query, queryCachemode);
     }
 
-    protected <R> R getFirstResultForUpdate(CriteriaQuery<R> query, Duration lockTimeout) {
-        return generalDao.getFirstResultForUpdate(em(), query, lockTimeout);
+    protected <R> R findFirstForUpdate(CriteriaQuery<R> query, Duration lockTimeout) {
+        return generalDao.findFirstForUpdate(em(), query, lockTimeout);
     }
 
-    protected <R> R getFirstResultForPessimisticRead(CriteriaQuery<R> query, Duration lockTimeout) {
-        return generalDao.getFirstResultForPessimisticRead(em(), query, lockTimeout);
+    protected <R> R findFirstForPessimisticRead(CriteriaQuery<R> query, Duration lockTimeout) {
+        return generalDao.findFirstForPessimisticRead(em(), query, lockTimeout);
     }
 
-    protected <R> R getFirstResultForUpdateSkipLocked(CriteriaQuery<R> query) {
-        return generalDao.getFirstResultForUpdateSkipLocked(em(), query);
-    }
-
-    protected <R> R getUniqueResult(CriteriaQuery<R> query) {
-        return generalDao.getUniqueResult(em(), query);
-    }
-
-    protected <R> R getUniqueResult(CriteriaQuery<R> query, QueryCacheMode queryCachemode) {
-        return generalDao.getUniqueResult(em(), query, queryCachemode);
+    protected <R> R findFirstForUpdateSkipLocked(CriteriaQuery<R> query) {
+        return generalDao.findFirstResultForUpdateSkipLocked(em(), query);
     }
 
     protected <NUMBER extends Number> Predicate asPredicate(Expression<NUMBER> attribute, Filter numberFilter) {

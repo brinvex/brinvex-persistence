@@ -16,13 +16,18 @@
 package test.com.brinvex.persistence;
 
 import com.brinvex.persistence.api.Filter;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.TransactionRequiredException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
 import org.hibernate.LazyInitializationException;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.com.brinvex.persistence.dao.EmployeeDao;
@@ -572,6 +577,61 @@ public class EntityDaoTest extends AbstractTest {
             Long[] longIdPair0 = idPairs.getFirst();
             Long id00 = longIdPair0[0];
             assertEquals(emp1.getId(), id00);
+        });
+    }
+
+    /*
+    This test shows that it is not a good idea to mix entityManager.find with SKIPLOCKED.
+    If you need a SKIPLOCKED, use a query, not an entityManager.find.
+    */
+    @Test
+    void transactionNotRequired_forSkipLocked_findById() {
+        long someId = emp1.getId();
+
+        assertThrows(TransactionRequiredException.class, () -> {
+            try (EntityManager em = emf.createEntityManager()) {
+                Session hibSession = em.unwrap(Session.class);
+                hibSession.find(Employee.class, someId, LockModeType.PESSIMISTIC_WRITE);
+                fail("Expecting TransactionRequiredException");
+            }
+        });
+
+        {
+            try (EntityManager em = emf.createEntityManager()) {
+                Session hibSession = em.unwrap(Session.class);
+                Employee emp = hibSession.find(Employee.class, someId, LockMode.PESSIMISTIC_WRITE);
+                assertNotNull(emp);
+            }
+        }
+        {
+            try (EntityManager em = emf.createEntityManager()) {
+                Session hibSession = em.unwrap(Session.class);
+                Employee emp = hibSession.find(Employee.class, someId, LockMode.UPGRADE_SKIPLOCKED);
+                assertNotNull(emp);
+            }
+        }
+        {
+            try (EntityManager em = emf.createEntityManager()) {
+                Session hibSession = em.unwrap(Session.class);
+                Employee emp = hibSession.find(Employee.class, someId, LockModeType.PESSIMISTIC_WRITE, LockMode.UPGRADE_SKIPLOCKED);
+                assertNotNull(emp);
+            }
+        }
+        {
+            try (EntityManager em = emf.createEntityManager()) {
+                Session hibSession = em.unwrap(Session.class);
+                Employee emp = hibSession.find(Employee.class, someId, LockMode.PESSIMISTIC_WRITE, LockMode.UPGRADE_SKIPLOCKED);
+                assertNotNull(emp);
+            }
+        }
+    }
+
+    @Test
+    void transactionRequired_forSkipLocked_query() {
+        assertThrows(TransactionRequiredException.class, () -> {
+            try (EntityManager em = emf.createEntityManager()) {
+                new SalaryDao(em).findForUpdateSkipLocked(emp1.getId(), salary1_1.getDate());
+            }
         });
     }
 

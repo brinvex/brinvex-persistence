@@ -28,7 +28,7 @@ public abstract class AbstractTest {
 
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    private EntityManagerFactory emf;
+    protected EntityManagerFactory emf;
 
     @BeforeEach
     void init() {

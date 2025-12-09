@@ -27,13 +27,13 @@ public interface EntityDao<ENTITY, ID extends Serializable> {
 
     ENTITY getByIdForUpdate(ID id, Duration lockDuration);
 
-    ENTITY getByIdForUpdateSkipLocked(ID id);
-
     ENTITY getByIdAndCheckVersion(ID id, short optLockVersion, Function<ENTITY, Short> optLockVersionGetter);
 
     ENTITY getByIdAndCheckVersion(ID id, int optLockVersion, Function<ENTITY, Integer> optLockVersionGetter);
 
     List<ENTITY> findByIds(Collection<ID> ids);
+
+    ENTITY findByIdForUpdateSkipLocked(ID id);
 
     ENTITY getReference(ID id);
 

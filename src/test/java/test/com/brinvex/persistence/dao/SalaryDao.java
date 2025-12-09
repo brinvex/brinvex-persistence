@@ -57,7 +57,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
             employeeJoin = r.join(Salary_.employee);
         }
         q.where(cb.equal(employeeJoin.get(Employee_.id), employeeId));
-        return getResults(q);
+        return find(q);
     }
 
     public List<Salary> findByNumberFilter(long employeeId, Filter salaryFilter) {
@@ -69,7 +69,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
                 cb.equal(employeeJoin.get(Employee_.id), employeeId),
                 asPredicate(r.get(Salary_.amount), salaryFilter)
         );
-        return getResults(q);
+        return find(q);
     }
 
     public List<Salary> findByDates(long employeeId, Collection<LocalDate> dateFilter) {
@@ -81,7 +81,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
                 cb.equal(employeeJoin.get(Employee_.id), employeeId),
                 inCollection(r.get(Salary_.date), dateFilter)
         );
-        return getResults(q);
+        return find(q);
     }
 
     public Salary findForUpdate(long employeeId, LocalDate date, Duration lockTimeout) {
@@ -93,7 +93,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
                 cb.equal(employeeJoin.get(Employee_.id), employeeId),
                 cb.equal(r.get(Salary_.date), date)
         );
-        return getFirstResultForUpdate(q, lockTimeout);
+        return findFirstForUpdate(q, lockTimeout);
     }
 
     public Salary findForPessimisticRead(long employeeId, LocalDate date, Duration lockTimeout) {
@@ -105,7 +105,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
                 cb.equal(employeeJoin.get(Employee_.id), employeeId),
                 cb.equal(r.get(Salary_.date), date)
         );
-        return getFirstResultForPessimisticRead(q, lockTimeout);
+        return findFirstForPessimisticRead(q, lockTimeout);
     }
 
     public Salary findForUpdateSkipLocked(long employeeId, LocalDate date) {
@@ -117,7 +117,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
                 cb.equal(employeeJoin.get(Employee_.id), employeeId),
                 cb.equal(r.get(Salary_.date), date)
         );
-        return getFirstResultForUpdateSkipLocked(q);
+        return findFirstForUpdateSkipLocked(q);
     }
 
     public List<Integer> findDays(long employeeId) {
@@ -126,7 +126,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
         Root<Salary> r = q.from(Salary.class);
         q.where(cb.equal(r.get(Salary_.employee).get(Employee_.id), employeeId));
         q.select(day(r.get(Salary_.date)));
-        return getResults(q);
+        return find(q);
     }
 
     public List<Integer> findMonths(long employeeId) {
@@ -135,7 +135,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
         Root<Salary> r = q.from(Salary.class);
         q.where(cb.equal(r.get(Salary_.employee).get(Employee_.id), employeeId));
         q.select(month(r.get(Salary_.date)));
-        return getResults(q);
+        return find(q);
     }
 
     public List<Integer> findYears(long employeeId) {
@@ -144,7 +144,7 @@ public class SalaryDao extends AbstractEntityDao<Salary, Long> {
         Root<Salary> r = q.from(Salary.class);
         q.where(cb.equal(r.get(Salary_.employee).get(Employee_.id), employeeId));
         q.select(year(r.get(Salary_.date)));
-        return getResults(q);
+        return find(q);
     }
 
     public Salary findByIdAsDTO(long salaryId) {

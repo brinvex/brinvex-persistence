@@ -64,7 +64,7 @@
 
         <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <!-- Presented in README -->
-        <hibernate.version.version>7.1.8.Final</hibernate.version.version>
+        <hibernate.version>7.1.8.Final</hibernate.version>
 
         <postgresql.version>42.7.8</postgresql.version>
     </properties>
@@ -72,16 +72,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.brinvex.util</groupId>
-                <artifactId>brinvex-persistence-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.brinvex.util</groupId>
-                <artifactId>brinvex-persistence-entity-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>jakarta.annotation</groupId>
@@ -96,12 +86,12 @@
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.version.version}</version>
+                <version>${hibernate.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-jpamodelgen</artifactId>
-                <version>${hibernate.version.version}</version>
+                <version>${hibernate.version}</version>
             </dependency>
 
             <dependency>
@@ -185,7 +175,7 @@
                         <path>
                             <groupId>org.hibernate.orm</groupId>
                             <artifactId>hibernate-jpamodelgen</artifactId>
-                            <version>${hibernate.version.version}</version>
+                            <version>${hibernate.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <annotationProcessors>

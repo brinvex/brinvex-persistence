@@ -41,19 +41,6 @@ public interface GeneralDao {
             Duration lockTimeout
     );
 
-    <ENTITY, ID extends Serializable> ENTITY getByIdForUpdateSkipLocked(
-            EntityManager em,
-            Class<ENTITY> entityType,
-            ID id
-    );
-
-    <ENTITY, ID extends Serializable> List<ENTITY> findByIds(
-            EntityManager em,
-            Class<ENTITY> entityType,
-            Collection<ID> ids,
-            SingularAttribute<? super ENTITY, ID> idAttribute
-    );
-
     <ENTITY, ID extends Serializable> ENTITY getByIdAndCheckVersion(
             EntityManager em,
             Class<ENTITY> entityType,
@@ -68,6 +55,20 @@ public interface GeneralDao {
             ID id,
             int optLockVersion,
             Function<ENTITY, Integer> optLockVersionGetter
+    );
+
+    <ENTITY, ID extends Serializable> ENTITY findByIdForUpdateSkipLocked(
+            EntityManager em,
+            Class<ENTITY> entityType,
+            ID id,
+            SingularAttribute<? super ENTITY, ID> idAttribute
+    );
+
+    <ENTITY, ID extends Serializable> List<ENTITY> findByIds(
+            EntityManager em,
+            Class<ENTITY> entityType,
+            Collection<ID> ids,
+            SingularAttribute<? super ENTITY, ID> idAttribute
     );
 
     <ENTITY, ID, DTO> DTO findByIdAsDTO(
@@ -106,13 +107,13 @@ public interface GeneralDao {
 
     <F, T> Join<F, T> fetchJoin(From<?, F> from, SingularAttribute<? super F, T> attribute);
 
-    <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query);
+    <R> List<R> find(EntityManager em, CriteriaQuery<R> query);
 
-    <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query, Integer offset, Integer limit);
+    <R> List<R> find(EntityManager em, CriteriaQuery<R> query, Integer offset, Integer limit);
 
-    <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query, QueryCacheMode queryCacheMode);
+    <R> List<R> find(EntityManager em, CriteriaQuery<R> query, QueryCacheMode queryCacheMode);
 
-    <R> List<R> getResults(
+    <R> List<R> find(
             EntityManager em,
             CriteriaQuery<R> query,
             Integer offset,
@@ -134,32 +135,27 @@ public interface GeneralDao {
             SingularAttribute<? super ENTITY, ID> idAttribute
     );
 
-    <R> R getUniqueResult(EntityManager em, CriteriaQuery<R> q);
+    <R> R findFirst(EntityManager em, CriteriaQuery<R> q);
 
-    <R> R getUniqueResult(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode);
+    <R> R findFirst(EntityManager em, CriteriaQuery<R> q, Integer offset);
 
-    <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q);
+    <R> R findFirst(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode);
 
-    <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q, Integer offset);
-
-    <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode);
-
-    @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
     void setTransactionScopedLockTimeout(EntityManager em, Duration timeout);
 
-    <R> R getFirstResultForUpdate(
+    <R> R findFirstForUpdate(
             EntityManager em,
             CriteriaQuery<R> q,
             Duration lockTimeout
     );
 
-    <R> R getFirstResultForPessimisticRead(
+    <R> R findFirstForPessimisticRead(
             EntityManager em,
             CriteriaQuery<R> q,
             Duration lockTimeout
     );
 
-    <R> R getFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q);
+    <R> R findFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q);
 
     <R> Query<R> asHibernateQuery(TypedQuery<R> typedQuery);
 

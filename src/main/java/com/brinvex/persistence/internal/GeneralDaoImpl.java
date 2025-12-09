@@ -35,7 +35,6 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
 import jakarta.persistence.metamodel.SingularAttribute;
 import org.hibernate.LockMode;
-import org.hibernate.Session;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.dialect.Database;
 import org.hibernate.dialect.Dialect;
@@ -69,9 +68,6 @@ public class GeneralDaoImpl implements GeneralDao {
 
     @Override
     public <ENTITY, ID extends Serializable> ENTITY getById(EntityManager em, Class<ENTITY> entityType, ID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Required non-null id");
-        }
         return em.find(entityType, id);
     }
 
@@ -82,9 +78,6 @@ public class GeneralDaoImpl implements GeneralDao {
             ID id,
             Duration lockTimeout
     ) {
-        if (id == null) {
-            throw new IllegalArgumentException("Required non-null id");
-        }
         setTransactionScopedLockTimeout(em, lockTimeout);
         ENTITY entity = em.find(entityType, id, LockModeType.PESSIMISTIC_WRITE);
         setTransactionScopedLockTimeout(em, Duration.ZERO);
@@ -92,16 +85,20 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
-    public <ENTITY, ID extends Serializable> ENTITY getByIdForUpdateSkipLocked(
+    public <ENTITY, ID extends Serializable> ENTITY findByIdForUpdateSkipLocked(
             EntityManager em,
             Class<ENTITY> entityType,
-            ID id
+            ID id,
+            SingularAttribute<? super ENTITY, ID> idAttribute
     ) {
         if (id == null) {
             throw new IllegalArgumentException("Required non-null id");
         }
-        Session hibSession = em.unwrap(Session.class);
-        return hibSession.find(entityType, id, LockMode.UPGRADE_SKIPLOCKED);
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ENTITY> q = cb.createQuery(entityType);
+        Root<ENTITY> r = q.from(entityType);
+        q.where(cb.equal(r.get(idAttribute), id));
+        return findFirstResultForUpdateSkipLocked(em, q);
     }
 
     @Override
@@ -115,7 +112,7 @@ public class GeneralDaoImpl implements GeneralDao {
         CriteriaQuery<ENTITY> q = cb.createQuery(entityType);
         Root<ENTITY> r = q.from(entityType);
         q.where(inCollection(cb, r.get(idAttribute), ids));
-        return getResults(em, q);
+        return find(em, q);
     }
 
     @Override
@@ -172,7 +169,7 @@ public class GeneralDaoImpl implements GeneralDao {
         Selection<?>[] selections = constructorParameters.stream().map(r::get).toArray(Selection[]::new);
         q.select(cb.construct(dtoType, selections));
 
-        return getFirstResult(em, q);
+        return findFirst(em, q);
     }
 
     @Override
@@ -258,26 +255,26 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
-    public <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query) {
+    public <R> List<R> find(EntityManager em, CriteriaQuery<R> query) {
         return em.createQuery(query).getResultList();
     }
 
     @Override
-    public <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query, Integer offset, Integer limit) {
+    public <R> List<R> find(EntityManager em, CriteriaQuery<R> query, Integer offset, Integer limit) {
         TypedQuery<R> typedQuery = em.createQuery(query);
         applyOffsetAndLimit(typedQuery, offset, limit);
         return typedQuery.getResultList();
     }
 
     @Override
-    public <R> List<R> getResults(EntityManager em, CriteriaQuery<R> query, QueryCacheMode queryCacheMode) {
+    public <R> List<R> find(EntityManager em, CriteriaQuery<R> query, QueryCacheMode queryCacheMode) {
         TypedQuery<R> typedQuery = em.createQuery(query);
         applyQueryCacheHint(typedQuery, queryCacheMode);
         return typedQuery.getResultList();
     }
 
     @Override
-    public <R> List<R> getResults(
+    public <R> List<R> find(
             EntityManager em,
             CriteriaQuery<R> query,
             Integer offset,
@@ -332,45 +329,13 @@ public class GeneralDaoImpl implements GeneralDao {
         return typedQuery.getSingleResult();
     }
 
-
     @Override
-    public <R> R getUniqueResult(EntityManager em, CriteriaQuery<R> q) {
-        return getUniqueResult(em, q, QueryCacheMode.BYPASS_QUERY_CACHE);
-    }
-
-    /**
-     * Returns record satisfying the given criteria, if there is exactly one such record.
-     * Returns null if there is no record satisfying the given criteria.
-     * If there are 2 or more records satisfying the given criteria then IllegalArgumentException is thrown.
-     * <p>
-     * Be aware that there is some performance overhead on DB side
-     * to check if there are more than one satisfying records.
-     * If uniqueness is guaranteed in some other way then consider to use getFirstResult method.
-     */
-    @Override
-    public <R> R getUniqueResult(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode) {
-        TypedQuery<R> typedQuery = em
-                .createQuery(q)
-                .setMaxResults(2);
-
-        applyQueryCacheHint(typedQuery, queryCacheMode);
-
-        List<R> records = typedQuery.getResultList();
-        int recordSize = records.size();
-        return switch (recordSize) {
-            case 0 -> null;
-            case 1 -> records.getFirst();
-            default -> throw new IllegalArgumentException(format("Expecting zero or one record, but found %s", recordSize));
-        };
+    public <R> R findFirst(EntityManager em, CriteriaQuery<R> q) {
+        return findFirst(em, q, QueryCacheMode.BYPASS_QUERY_CACHE);
     }
 
     @Override
-    public <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q) {
-        return getFirstResult(em, q, QueryCacheMode.BYPASS_QUERY_CACHE);
-    }
-
-    @Override
-    public <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q, Integer offset) {
+    public <R> R findFirst(EntityManager em, CriteriaQuery<R> q, Integer offset) {
         TypedQuery<R> typedQuery = em
                 .createQuery(q)
                 .setFirstResult(offset == null ? 0 : offset)
@@ -386,7 +351,7 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
-    public <R> R getFirstResult(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode) {
+    public <R> R findFirst(EntityManager em, CriteriaQuery<R> q, QueryCacheMode queryCacheMode) {
         TypedQuery<R> typedQuery = em
                 .createQuery(q)
                 .setMaxResults(1);
@@ -429,10 +394,10 @@ public class GeneralDaoImpl implements GeneralDao {
      * 2024-12-14 Postgresql 17.2 + jdbc-driver-postgresql-42.7 + Hibernate 6.6.
      * 2025-12-02 Postgresql 18.1 + jdbc-driver-postgresql-42.7 + Hibernate 7.1.
      * <p>
-     * If the query-scoped timeout hint "jakarta.persistence.lock.timeout" is greater than 0 then it is just ignored,
-     * and default wait_forever=-1 is applied.
+     * If the query-scoped timeout hint "jakarta.persistence.lock.timeout" is greater than 0, then it is just ignored,
+     * and the default wait_forever=-1 is applied.
      * <p>
-     * As a workaround to this problem we will use transaction scoped lock timeouts.
+     * As a workaround to this problem, we will use transaction scoped lock timeouts.
      * <ul>
      * <li><a href="https://blog.mimacom.com/handling-pessimistic-locking-jpa-oracle-mysql-postgresql-derbi-h2/">blog.mimacom.com/handling-pessimistic-locking-jpa-oracle-mysql-postgresql-derbi-h2</a>
      * <li><a href="https://stackoverflow.com/questions/20963450/controlling-duration-of-postgresql-lock-waits">stackoverflow.com/questions/20963450/controlling-duration-of-postgresql-lock-waits</a>
@@ -468,7 +433,7 @@ public class GeneralDaoImpl implements GeneralDao {
      * </pre>
      */
     @Override
-    public <R> R getFirstResultForUpdate(
+    public <R> R findFirstForUpdate(
             EntityManager em,
             CriteriaQuery<R> q,
             Duration lockTimeout
@@ -494,7 +459,7 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
-    public <R> R getFirstResultForPessimisticRead(
+    public <R> R findFirstForPessimisticRead(
             EntityManager em,
             CriteriaQuery<R> q,
             Duration lockTimeout
@@ -520,7 +485,7 @@ public class GeneralDaoImpl implements GeneralDao {
     }
 
     @Override
-    public <R> R getFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q) {
+    public <R> R findFirstResultForUpdateSkipLocked(EntityManager em, CriteriaQuery<R> q) {
         TypedQuery<R> typedQuery = em
                 .createQuery(q)
                 .setMaxResults(1);

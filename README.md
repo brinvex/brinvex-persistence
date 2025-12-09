@@ -20,7 +20,7 @@ remaining straightforward and focused on _PostgreSQL_ and _Microsoft SQL Server_
     
 <dependency>
     <groupId>com.brinvex</groupId>
-    <artifactId>brinvex-persistence-api</artifactId>
+    <artifactId>brinvex-persistence</artifactId>
     <version>${brinvex-persistence.version}</version>
 </dependency>
 ````
