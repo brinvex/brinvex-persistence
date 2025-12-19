@@ -49,6 +49,13 @@
         <github-site-maven-plugin.version>0.11</github-site-maven-plugin.version>
         <github.global.server>github-pubrepo-brinvex</github.global.server>
 
+        <!--
+        Keep dependencies versions aligned with the spring-boot
+        https://github.com/spring-projects/spring-boot/releases/
+        https://central.sonatype.com/artifact/org.springframework.boot/spring-boot-dependencies/overview
+        spring-boot 4.0.1
+        -->
+
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
@@ -56,17 +63,18 @@
         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
 
-        <jakarta.persistence-api.version>3.2.0</jakarta.persistence-api.version>
-        <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
+        <jakarta-persistence.version>3.2.0</jakarta-persistence.version>
+        <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
 
-        <slf4j.version>2.0.17</slf4j.version>
-        <logback-classic.version>1.5.21</logback-classic.version>
-
-        <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <!-- Presented in README -->
-        <hibernate.version>7.1.8.Final</hibernate.version>
+        <hibernate.version>7.2.0.Final</hibernate.version>
 
         <postgresql.version>42.7.8</postgresql.version>
+
+        <slf4j.version>2.0.17</slf4j.version>
+        <logback.version>1.5.22</logback.version>
+
+        <junit-jupiter.version>6.0.1</junit-jupiter.version>
     </properties>
 
 
@@ -76,12 +84,12 @@
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
-                <version>${jakarta.annotation-api.version}</version>
+                <version>${jakarta-annotation.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
-                <version>${jakarta.persistence-api.version}</version>
+                <version>${jakarta-persistence.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
@@ -108,7 +116,7 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>${logback-classic.version}</version>
+                <version>${logback.version}</version>
             </dependency>
 
             <dependency>
