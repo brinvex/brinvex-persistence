@@ -6,7 +6,7 @@ remaining straightforward and focused on _PostgreSQL_ and _Microsoft SQL Server_
 
 ````
 <properties>
-     <brinvex-persistence.version>1.2.0</brinvex-persistence.version>
+     <brinvex-persistence.version>1.2.2</brinvex-persistence.version>
 </properties>
 
 <repository>
