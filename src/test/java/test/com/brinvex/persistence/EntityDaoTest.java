@@ -364,6 +364,28 @@ public class EntityDaoTest extends AbstractTest {
     }
 
     @Test
+    void findForUpdate_largestExactTimeUnit() {
+        doInTx(em -> {
+            new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(59_000));
+        });
+        doInTx(em -> {
+            new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(61_000));
+        });
+        assertThrows(IllegalArgumentException.class, () ->
+                doInTx(em -> {
+                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(59_001));
+                }));
+        assertThrows(IllegalArgumentException.class, () ->
+                doInTx(em -> {
+                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(61_001));
+                }));
+        assertThrows(IllegalArgumentException.class, () ->
+                doInTx(em -> {
+                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(60_000));
+                }));
+    }
+
+    @Test
     void findForPessimisticRead() throws InterruptedException, ExecutionException {
 
         Callable<Object> c1 = () -> doInTx(em -> {
