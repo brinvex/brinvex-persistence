@@ -394,6 +394,8 @@ public class GeneralDaoImpl implements GeneralDao {
                 assert value.endsWith( "s" );
 				final int secondsValue = Integer.parseInt( value.substring( 0, value.length() - 1 ) );
 				return Timeout.seconds( secondsValue );
+			https://hibernate.atlassian.net/browse/HHH-20027
+			https://github.com/hibernate/hibernate-orm/pull/11535
              */
             if (!timeout.isZero() && !largestExactUnitIsSecond(timeout)) {
                 throw new IllegalArgumentException("The largest exact unit must be Seconds: " + timeout);
