@@ -380,41 +380,11 @@ public class GeneralDaoImpl implements GeneralDao {
             to acquire a lock on a table, index, row, or other database object.
             The effects of SET LOCAL last only till the end of the current transaction
              */
-            /*
-            We must check whether the largest exact time unit of the given timeout parameter is Second,
-            because:
-            1. We call: set local lock_timeout = timeoutInMillis
-            2. Hibernate later calls: select current_setting('lock_timeout', true)
-               and Postgresql returns the value converted into the largest exact human-readable canonical unit
-            3. Hibernate validates: assert value.endsWith( "s" );
-            4. Hibernate parses: Integer.parseInt( value.substring( 0, value.length() - 1 ) );
-            See org.hibernate.dialect.lock.internal.PostgreSQLLockingSupport.getLockTimeout.
-            We can remove this restriction when Hibernate/Postgresql will better cooperate here.
-            The code from Hibernate 7.2:
-                assert value.endsWith( "s" );
-				final int secondsValue = Integer.parseInt( value.substring( 0, value.length() - 1 ) );
-				return Timeout.seconds( secondsValue );
-			https://hibernate.atlassian.net/browse/HHH-20027
-			https://github.com/hibernate/hibernate-orm/pull/11535
-             */
-            if (!timeout.isZero() && !largestExactUnitIsSecond(timeout)) {
-                throw new IllegalArgumentException("The largest exact unit must be Seconds: " + timeout);
-            }
             long timeoutInMillis = timeout.toMillis();
             em.createNativeQuery("set local lock_timeout = " + timeoutInMillis).executeUpdate();
         } else {
             throw new IllegalStateException("Unsupported database: " + database);
         }
-    }
-
-    private static boolean largestExactUnitIsSecond(Duration d) {
-        // must be whole seconds
-        if (d.getNano() != 0) {
-            return false;
-        }
-        long seconds = Math.abs(d.getSeconds());
-        // NOT exactly divisible by 60 → otherwise minutes would be the largest exact unit
-        return seconds % 60 != 0;
     }
 
     /**

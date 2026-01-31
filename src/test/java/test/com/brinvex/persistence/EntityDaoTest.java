@@ -363,6 +363,10 @@ public class EntityDaoTest extends AbstractTest {
         }
     }
 
+    /*
+    https://hibernate.atlassian.net/browse/HHH-20027
+	https://github.com/hibernate/hibernate-orm/pull/11535
+     */
     @Test
     void findForUpdate_largestExactTimeUnit() {
         doInTx(em -> {
@@ -371,18 +375,15 @@ public class EntityDaoTest extends AbstractTest {
         doInTx(em -> {
             new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(61_000));
         });
-        assertThrows(IllegalArgumentException.class, () ->
-                doInTx(em -> {
-                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(59_001));
-                }));
-        assertThrows(IllegalArgumentException.class, () ->
-                doInTx(em -> {
-                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(61_001));
-                }));
-        assertThrows(IllegalArgumentException.class, () ->
-                doInTx(em -> {
-                    new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(60_000));
-                }));
+        doInTx(em -> {
+            new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(59_001));
+        });
+        doInTx(em -> {
+            new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(61_001));
+        });
+        doInTx(em -> {
+            new SalaryDao(em).findForUpdate(emp1.getId(), salary1_1.getDate(), Duration.ofMillis(60_000));
+        });
     }
 
     @Test
